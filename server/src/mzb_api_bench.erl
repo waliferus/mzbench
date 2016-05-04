@@ -525,7 +525,8 @@ run_periodically(StartTime, MaxTime, RetryTimeoutSec, Fn) ->
     end.
 
 allocate_hosts(#{nodes_arg:= N, cloud:= Cloud} = Config, Logger) when is_integer(N), N > 0 ->
-    #{purpose:= Purpose,
+    #{id:= BenchId,
+      purpose:= Purpose,
       initial_user:= User,
       exclusive_node_usage:= Exclusive} = Config,
     Description = mzb_string:format("MZBench cluster:~n~p", [Config]),
@@ -537,7 +538,7 @@ allocate_hosts(#{nodes_arg:= N, cloud:= Cloud} = Config, Logger) when is_integer
     },
     % Allocate one supplementary node for the director
     Logger(info, "Allocating ~p hosts in ~p cloud...", [N + 1, Cloud]),
-    {ok, ClusterId, UserName, Hosts} = mzb_api_cloud:create_cluster(Cloud, N + 1, ClusterConfig),
+    {ok, ClusterId, UserName, Hosts} = mzb_api_cloud:create_cluster(BenchId, Cloud, N + 1, ClusterConfig),
     Deallocator =
         fun () ->
             mzb_api_cloud:destroy_cluster(ClusterId)
