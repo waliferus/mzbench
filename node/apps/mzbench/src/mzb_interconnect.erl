@@ -96,6 +96,7 @@ multi_call(Nodes, Req, Timeout) ->
     {[V || {ok, V} <- L], [V || {bad, V} <- L]}.
 
 abcast(Nodes, Msg) ->
+    system_log:info("ABCAST ~p <- ~p", [Nodes, Msg]),
     gen_server:cast(?MODULE, {abcast, Nodes, Msg}).
 
 monitor(process, Pid) ->
