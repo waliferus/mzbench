@@ -44,6 +44,18 @@ handle(is_director_alive, _) ->
 handle(get_local_timestamp, _) ->
     {reply, os:timestamp()};
 
+handle({token, From, Timestamp}, _) ->
+    R = timer:now_diff(os:timestamp(), Timestamp),
+    lager:info("Token: ~p -> ~p, latency: ~b", [From, node(), R]),
+    mzb_metrics:notify({"regular", histogram}, 100000 + R),
+    noreply;
+
+handle({normalized_token, From, Timestamp}, _) ->
+    R = timer:now_diff(mzb_time:timestamp(), Timestamp),
+    lager:info("Token: ~p -> ~p, latency: ~b (offset: ~p)", [From, node(), R, mzb_time:get_offset()]),
+    mzb_metrics:notify({"normalized", histogram}, 100000 + R),
+    noreply;
+
 handle(Unhandled, _) ->
     system_log:error("Unhandled node message: ~p", [Unhandled]),
     erlang:error({unknown_message, Unhandled}).

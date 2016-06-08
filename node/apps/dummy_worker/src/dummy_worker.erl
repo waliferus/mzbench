@@ -1,7 +1,8 @@
 -module(dummy_worker).
 
 -export([initial_state/0, metrics/0,
-         print/3, test_method/3, test_pre_hook/1, doubled_print_counter/0]).
+         print/3, test_method/3, test_pre_hook/1, doubled_print_counter/0,
+         send_token/2, send_normalized_token/2]).
 
 -type state() :: string().
 
@@ -10,6 +11,8 @@ initial_state() -> "".
 
 metrics() ->
     [{"print", counter, #{visibility => false, rps_visibility => true}},
+     {"regular", histogram, #{visibility => true}},
+     {"normalized", histogram, #{visibility => true}},
      {"dummy", histogram, #{visibility => true}},
      {"derived", derived, #{resolver => doubled_print_counter, visibility => false}}].
 
@@ -22,6 +25,24 @@ print(State, _Meta, Text) ->
     lager:info("Dummy print: ~p", [Text]),
     Finish = os:timestamp(),
     _ = mzb_metrics:notify({"dummy", histogram}, timer:now_diff(Finish, Start)),
+    {nil, State}.
+
+send_token(State, _Meta) ->
+    Nodes = case lists:usort(mzb_interconnect:nodes()) of
+        [] -> [node()];
+        Ns -> Ns
+    end,
+    Target = lists:nth(random:uniform(length(Nodes)), Nodes),
+    mzb_interconnect:cast(Target, {token, node(), os:timestamp()}),
+    {nil, State}.
+
+send_normalized_token(State, _Meta) ->
+    Nodes = case lists:usort(mzb_interconnect:nodes()) of
+        [] -> [node()];
+        Ns -> Ns
+    end,
+    Target = lists:nth(random:uniform(length(Nodes)), Nodes),
+    mzb_interconnect:cast(Target, {normalized_token, node(), mzb_time:timestamp()}),
     {nil, State}.
 
 test_method(State, _Meta, Text) ->
