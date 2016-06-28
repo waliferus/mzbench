@@ -162,6 +162,7 @@ init([]) ->
     MaxId = import_data(ServerDir),
     User = sys_username(),
     {ok, MaxBenchNum} = application:get_env(mzbench_api, max_bench_num),
+    {ok, _} = dets:open_file(dashboards, [{file, filename:join(ServerDir, "dashboards")}, {type, set}]),
     lager:info("Server username: ~p", [User]),
 
     {ok, check_max_bench_num(#{next_id => MaxId + 1,
@@ -391,7 +392,7 @@ import_data(Dir) ->
 
     WC = filename:join(Dir, "*"),
 
-    Items = [D || D <- mzb_file:wildcard(WC), [C|_] <- [filename:basename(D)], C /= $.],
+    Items = [D || D <- mzb_file:wildcard(WC), filelib:is_dir(D), [C|_] <- [filename:basename(D)], C /= $.],
 
     Import = fun (BenchFolder, Max) ->
         File = filename:join([BenchFolder, "status"]),
