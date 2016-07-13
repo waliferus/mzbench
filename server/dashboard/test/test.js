@@ -58,16 +58,15 @@ function runTest(actions) {
         if (actions.length === 0) phantom.exit(0);
         var current = actions.shift();
 
-        if (current[0] == 'wait')
+        if (current[0] == 'wait') {
             waitFor(function() {return page.evaluate(makeFun(current[1]), current[1]);},
                     function() { runTest(actions); },
                     current[1], current[2] ? current[2] : 1000);
-        else if (current[0] == 'click') {
+        } else if (current[0] == 'click') {
             page.evaluate(function(current, findObject) {
-                var evObj = document.createEvent('Events');
-                evObj.initEvent('click', true, false);
-                findObject(current).dispatchEvent(evObj);
+                findObject(current).click();
             }, current[1], findObject);
+
             runTest(actions);
         } else {
             console.log("Unknown action");
@@ -84,8 +83,36 @@ page.open("http://localhost:4800", function(status){
         console.log("Unable to access network");
         phantom.exit(1);
     } else {
-        runTest([['wait', ['a[href="#/new"]']], ['click', ['a[href="#/new"]']],
+        runTest([
+            // Start and wait until complete
+            ['wait', ['a[href="#/new"]']], ['click', ['a[href="#/new"]']],
             ['wait', ['button.btn', 'Run']], ['click', ['button.btn', 'Run']],
-            ['wait', ['span.label', 'running'], 20000], ['wait', ['div.bs-complete.bs-selected'], 600000]]);
+            ['wait', ['span.label', 'running'], 30000], ['wait', ['div.bs-complete.bs-selected'], 600000],
+
+            // Check that "scenario" tab is accessible
+            ['wait', ['li > a', 'Scenario']], ['click', ['li > a', 'Scenario']],
+            ['wait', ['code']],
+
+            // Check that "reports" tab is accessible
+            ['wait', ['li > a', 'Reports']], ['click', ['li > a', 'Reports']],
+            ['wait', ['h3 > span', 'Download report']],
+
+            // Check that "logs" tab is accessible
+            ['wait', ['li > a', 'Logs']], ['click', ['li > a', 'Logs']],
+            ['wait', ['.log-lookup-form']],
+
+            // Go to "overview" and run "restart"
+            ['wait', ['li > a', 'Overview']], ['click', ['li > a', 'Overview']],
+            ['wait', ['.btn-primary.pre-dropdown', 'Restart']],
+            ['click',['.btn-primary.pre-dropdown', 'Restart']],
+            ['wait', ['span.label', 'running'], 30000],
+
+            // Try to stop bench and make sure it has stopped
+            ['click', ['span.label', 'running']],
+            ['wait', ['a.btn-danger', 'Stop']], ['click', ['a.btn-danger', 'Stop']],
+            ['wait', ['span.label', 'stopped']]
+
+            ]);
+
     }
 });
