@@ -184,6 +184,7 @@ start_workers(Pool, Env, NumNodes, Offset, #s{} = State) ->
         Numbers = lists:seq(0, WNum - 1),
         StartTime = msnow(),
         lists:foreach(fun(N) ->
+                        system_log:info("WORKER_START_DELAY(~p, ~p, ~p, ~p)", [StartDelay, NumNodes, N, StartTime]),
                         worker_start_delay(StartDelay, NumNodes, N, StartTime),
                         WId = (StartingFrom + N) * NumNodes + Offset,
                         WorkerScript = mzbl_ast:add_meta(Script, [{worker_id, WId}]),
@@ -270,6 +271,7 @@ maybe_report_error(Pid, {exception, Node, {_C, E, ST}}) ->
 sleep_off(StartTime, ShouldBe) ->
     Current = msnow() - StartTime,
     Sleep = max(0, ShouldBe - Current),
+    system_log:info("SLEEP ~p (Current: ~p, ShouldBe: ~p)", [Sleep, Current, ShouldBe]),
     timer:sleep(Sleep).
 
 worker_start_delay(undefined, _, _, _) -> ok;
