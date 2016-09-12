@@ -81,7 +81,7 @@ function runTest(actions) {
 }
 
 page.open("http://localhost:4800", function(status){
-    var biggerTimeout = 30000;
+    var biggerTimeout = 60000;
     if (status !== "success") {
         console.log("Unable to access network");
         phantom.exit(1);
@@ -90,7 +90,7 @@ page.open("http://localhost:4800", function(status){
             // Start and wait until complete
             ['wait', ['a[href="#/new"]'], biggerTimeout], ['click', ['a[href="#/new"]']],
             ['wait', ['button.btn', 'Run']], ['click', ['button.btn', 'Run']],
-            ['wait', ['span.label', 'running'], biggerTimeout], ['wait', ['div.bs-complete.bs-selected'], 600000],
+            ['wait', ['span.label', 'running'], biggerTimeout], ['wait', ['div.bs-complete.bs-selected'], biggerTimeout],
 
             // Check that "scenario" tab is accessible
             ['wait', ['li > a', 'Scenario']], ['click', ['li > a', 'Scenario']],
