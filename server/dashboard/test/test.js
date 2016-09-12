@@ -1,5 +1,8 @@
 "use strict";
 
+var defaultTimeout = 1000;
+var biggerTimeout = 30000;
+
 function waitFor(testFx, onReady, name, timeOutMillis) {
     var start = new Date().getTime(),
     condition = false,
@@ -61,7 +64,7 @@ function runTest(actions) {
         if (current[0] == 'wait') {
             waitFor(function() {return page.evaluate(makeFun(current[1]), current[1]);},
                     function() { runTest(actions); },
-                    current[1], current[2] ? current[2] : 1000);
+                    current[1], current[2] ? current[2] : defaultTimeout);
         } else if (current[0] == 'click') {
             page.evaluate(function(current, findObject) {
                 findObject(current).click();
@@ -85,9 +88,9 @@ page.open("http://localhost:4800", function(status){
     } else {
         runTest([
             // Start and wait until complete
-            ['wait', ['a[href="#/new"]']], ['click', ['a[href="#/new"]']],
+            ['wait', ['a[href="#/new"]'], biggerTimeout], ['click', ['a[href="#/new"]']],
             ['wait', ['button.btn', 'Run']], ['click', ['button.btn', 'Run']],
-            ['wait', ['span.label', 'running'], 30000], ['wait', ['div.bs-complete.bs-selected'], 600000],
+            ['wait', ['span.label', 'running'], biggerTimeout], ['wait', ['div.bs-complete.bs-selected'], 600000],
 
             // Check that "scenario" tab is accessible
             ['wait', ['li > a', 'Scenario']], ['click', ['li > a', 'Scenario']],
@@ -105,7 +108,7 @@ page.open("http://localhost:4800", function(status){
             ['wait', ['li > a', 'Overview']], ['click', ['li > a', 'Overview']],
             ['wait', ['.btn-primary.pre-dropdown', 'Restart']],
             ['click',['.btn-primary.pre-dropdown', 'Restart']],
-            ['wait', ['span.label', 'running'], 30000],
+            ['wait', ['span.label', 'running'], biggerTimeout],
 
             // Try to stop bench and make sure it has stopped
             ['click', ['span.label', 'running']],
