@@ -1,7 +1,5 @@
 "use strict";
 
-var defaultTimeout = 1000;
-var biggerTimeout = 30000;
 
 function waitFor(testFx, onReady, name, timeOutMillis) {
     var start = new Date().getTime(),
@@ -57,6 +55,7 @@ function findObject(selector) {
 }
 
 function runTest(actions) {
+    var defaultTimeout = 1000;
     try {
         if (actions.length === 0) phantom.exit(0);
         var current = actions.shift();
@@ -82,6 +81,7 @@ function runTest(actions) {
 }
 
 page.open("http://localhost:4800", function(status){
+    var biggerTimeout = 30000;
     if (status !== "success") {
         console.log("Unable to access network");
         phantom.exit(1);
