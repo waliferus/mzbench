@@ -187,11 +187,12 @@ start_pools([Pool | Pools], Env, Nodes, Acc) ->
                 {start_pool, Pool, Env, length(Nodes), Num})
         end, NumberedNodes),
     system_log:info("Start pool monitors: ~p", [NewRef]),
-    start_pools(Pools, Env, shift(Nodes, Size), NewRef ++ Acc).
+    Results = [{Pid, Mon} || {_, Pid, _} = Mon <- NewRef],
+    start_pools(Pools, Env, shift(Nodes, Size), Results ++ Acc).
 
 stop_pools(Pools) ->
-    _ = [catch mzb_interconnect:demonitor(Mon, [flush]) || Mon <- Pools],
-    [catch mzb_interconnect:call(node(P), {stop_pool, P}) || {_, P, _} <- Pools],
+    _ = [catch mzb_interconnect:demonitor(Mon, [flush]) || {_, Mon} <- Pools],
+    [catch mzb_interconnect:call(node(P), {stop_pool, P}) || P <- Pools],
     ok.
 
 shift(Nodes, undefined) -> Nodes;
